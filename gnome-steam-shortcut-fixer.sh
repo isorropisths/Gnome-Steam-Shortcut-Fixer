@@ -7,17 +7,28 @@ initVariables() {
     shortcutsPath="$HOME/.local/share/applications"
     iconsPath="$HOME/.local/share/icons/hicolor/"
     steamLibraryConfigVdf="$HOME/.local/share/Steam/config/libraryfolders.vdf"
+    steamInstallType="native"
+
     if [ ! -f "$steamLibraryConfigVdf" ]; then
         # If the default path returns nothing try the flatpak path
         echo -e "\e[31mSteam library config file not found in the default path. Trying the flatpak path\e[0m"
         steamLibraryConfigVdf="$HOME/.var/app/com.valvesoftware.Steam/.local/share/Steam/config/libraryfolders.vdf"
+        steamInstallType="flatpak"
         if [ ! -f "$steamLibraryConfigVdf" ]; then
-            echo -e "\e[31mError: Steam library config file not found\e[0m"
-            exit 1
+            # If both the default path, and flatpak path are nil, try snap path
+            echo -e "\e[31mSteam library config file not found in flatpak path. Trying the snap path\e[0m"
+            steamLibraryConfigVdf="$HOME/snap/steam/common/.local/share/Steam/config/libraryfolders.vdf"
+            steamInstallType="snap"
+            if [ ! -f "$steamLibraryConfigVdf" ]; then
+              echo -e "\e[31mError: Steam library config file not found\e[0m"
+              exit 1
+            fi
+
         fi
     fi
     echo -e "\e[32mSteam library config file found at $steamLibraryConfigVdf\e[0m"
 }
+
 
 # Function to fix the existing shortcuts
 fixExistingShortcuts() {
@@ -118,7 +129,28 @@ createNewShortcuts() {
             echo -e "\e[90m--------------------------\e[0m"
             echo "[Desktop Entry]" > "$shortcutsPath/$gameName.desktop"
             echo "Name=$gameName" >> "$shortcutsPath/$gameName.desktop"
-            echo "Exec=steam steam://rungameid/$appId" >> "$shortcutsPath/$gameName.desktop"
+
+            case "$steamInstallType" in
+                flatpak)
+                    echo "Exec=flatpak run com.valvesoftware.Steam steam steam://rungameid/$appId" >> "$shortcutsPath/$gameName.desktop"
+                    ;;
+                snap)
+                    echo "Exec=snap run steam -applaunch $appId" >> "$shortcutsPath/$gameName.desktop"
+                    ;;
+                *)
+                    echo "Exec=steam steam://rungameid/$appId" >> "$shortcutsPath/$gameName.desktop"
+                    ;;
+            esac
+            # -----------------------------
+
+            echo "Type=Application" >> "$shortcutsPath/$gameName.desktop"
+
+            if [ -n "$gameIcon" ]; then
+                echo "Icon=steam_icon_$appId" >> "$shortcutsPath/$gameName.desktop"
+            else
+                echo "Icon=steam" >> "$shortcutsPath/$gameName.desktop"
+            fi
+
             echo "Type=Application" >> "$shortcutsPath/$gameName.desktop"
             # If the icon exists, then use it, otherwise use the default steam icon
             if [ -n "$gameIcon" ]; then
