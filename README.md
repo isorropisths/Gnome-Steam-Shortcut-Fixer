@@ -12,7 +12,9 @@ Utility tested on 2 PCs with GNOME 47 on Nobara 41 and Fedora 41.
 ## Features
 
 - Fix existing shortcuts to add `StartupWMClass` pointing to the correct `steam_app_<appId>` to display the correctly display the icon of games running with Proton when they are opened.
-- Create new pre-patched shortcuts for all installed games in all SteamLibrary folders on the system
+- Create new pre-patched shortcuts for all installed games in all SteamLibrary folders on the system.
+- Extract Non-Steam games from Steam's `shortcuts.vdf`, associate them with custom grid/artwork icons, and generate pre-patched `.desktop` files.
+- Automatically hide generated shortcuts from the GNOME application drawer/grid by default using `NoDisplay=true` to keep your menu clean while retaining taskbar window matching.
 
 ## Usage
 
@@ -41,8 +43,11 @@ Utility tested on 2 PCs with GNOME 47 on Nobara 41 and Fedora 41.
 Fix existing shortcuts:
 `-f` or `--fix`
 
-Create new shortcuts for all installed games:
+Create new shortcuts for all installed games (Steam and Non-Steam):
 `-c` or `--create`
+
+Create new shortcuts for Non-Steam games only:
+`-n` or `--nonsteam`
 
 Display the help message:
 `-h` or `--help`
@@ -51,3 +56,5 @@ Display the help message:
 
 - `curl`: To retrieve game names from the Steam API.
 - `jq`: To parse JSON responses from the Steam API.
+- `python3`: (Optional/Recommended) To parse binary VDF config files for Non-Steam game shortcut generation.
+
